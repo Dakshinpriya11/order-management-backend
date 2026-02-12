@@ -11,5 +11,9 @@ export const ERROR_CODES = {
   USER_ALREADY_EXISTS: 'USER_002',
   USER_FORBIDDEN: 'USER_003',
 
+  //menu
+  MENU_NOT_FOUND: "MENU_001",
+  MENU_INVALID_INPUT: "MENU_002",
+
   
 } as const;

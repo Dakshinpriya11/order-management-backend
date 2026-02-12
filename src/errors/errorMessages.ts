@@ -10,4 +10,9 @@ export const ERROR_MESSAGES = {
   USER_NOT_FOUND: 'The requested user does not exist.',
   USER_ALREADY_EXISTS: 'A user with this email already exists.',
   USER_FORBIDDEN: 'You do not have permission to perform this action.',
+
+  //menu
+  MENU_NOT_FOUND: "Menu item not found.",
+  MENU_INVALID_INPUT: "Invalid menu input.",
+
 } as const;
