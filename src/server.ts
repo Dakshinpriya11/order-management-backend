@@ -1,10 +1,11 @@
-// src/server.ts
+import http from "http";
 import app from "./app";
 import { connectDB, sequelize } from "./config/db";
 import { env } from "./config/env";
-import "./database/models/user.model"; // load models
+import "./database/models/user.model"; 
 import { errorHandler } from "./middleware/error.middleware";
 import { orderStatusCron } from "./modules/orders/order.cron";
+import { initSocket } from "./socket"; // use your socket folder setup
 
 const start = async () => {
   try {
@@ -15,19 +16,26 @@ const start = async () => {
     await sequelize.sync({ alter: true });
     console.log("Models synced");
 
-    // 3️⃣ Start Express server
-    app.listen(env.port, () => {
+    // 3️⃣ Create HTTP server
+    const server = http.createServer(app);
+
+    // 4️⃣ Initialize Socket.IO
+    const io = initSocket(server);
+    console.log("Socket.IO initialized");
+
+    // 5️⃣ Attach global error handler (after all routes)
+    app.use(errorHandler);
+
+    // 6️⃣ Start server
+    server.listen(env.port, () => {
       console.log(`Server running on port ${env.port}`);
     });
 
-    // 4️⃣ Attach global error handler (after all routes)
-    app.use(errorHandler);
+    // 7️⃣ Run cron immediately
+    await orderStatusCron(io);
 
-    // 5️⃣ Run order status cron immediately
-    await orderStatusCron();
-
-    // 6️⃣ Schedule cron to run every 1 minute
-    setInterval(orderStatusCron, 60 * 1000);
+    // 8️⃣ Schedule cron every minute
+    setInterval(() => orderStatusCron(io), 60 * 1000);
 
     console.log("Order status cron started and will run every 1 minute.");
   } catch (error: any) {

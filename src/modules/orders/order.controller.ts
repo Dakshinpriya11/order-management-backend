@@ -92,7 +92,7 @@ export class OrderController {
   /** Get single order by ID for current user */
   static async getOrderById(req: Request, res: Response) {
   try {
-    // ✅ Ensure user is authenticated
+    // Ensure user is authenticated
     if (!req.user) {
       throw new AppError(
         ERROR_CODES.AUTH_INVALID_CREDENTIALS,
@@ -103,7 +103,7 @@ export class OrderController {
 
     const user_id = req.user.id;
 
-    // ✅ Normalize id from params to string
+    // Normalize id from params to string
     let { id } = req.params;
     if (Array.isArray(id)) {
       id = id[0];
