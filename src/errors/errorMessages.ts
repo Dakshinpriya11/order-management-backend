@@ -15,4 +15,9 @@ export const ERROR_MESSAGES = {
   MENU_NOT_FOUND: "Menu item not found.",
   MENU_INVALID_INPUT: "Invalid menu input.",
 
+  //order
+  NOT_FOUND: "Resource not found",
+  ORDER_DUPLICATE: "Duplicate order detected",
+  VALIDATION_ERROR: "Validation failed for request data",
+
 } as const;
