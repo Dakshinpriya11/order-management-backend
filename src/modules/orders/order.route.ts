@@ -9,5 +9,7 @@ const router = Router();
 router.post("/", authMiddleware, validate(createOrderSchema), OrderController.createOrder);
 router.get("/", authMiddleware, OrderController.getOrders);
 router.get("/:id", authMiddleware, OrderController.getOrderById);
+router.post("/:orderId/confirm-payment",authMiddleware, OrderController.confirmPayment);
+
 
 export default router;

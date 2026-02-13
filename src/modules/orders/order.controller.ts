@@ -1,16 +1,19 @@
 // src/modules/orders/order.controller.ts
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { OrderService } from "./order.service";
 import { PaymentMethod } from "../../database/models/order.model";
 import { AppError } from "../../errors/appError";
 import { ERROR_CODES } from "../../errors/errorCodes";
 import { HTTP_STATUS } from "../../errors/httpStatus";
 
+interface ConfirmPaymentParams {
+  orderId: string;
+}
+
 export class OrderController {
   /** Create a new order */
   static async createOrder(req: Request, res: Response) {
     try {
-      // Ensure user is authenticated
       if (!req.user) {
         throw new AppError(
           ERROR_CODES.AUTH_INVALID_CREDENTIALS,
@@ -57,7 +60,7 @@ export class OrderController {
     }
   }
 
-  /** Get all orders for the current user, optional filtering by status/date */
+  /** Get all orders for the current user */
   static async getOrders(req: Request, res: Response) {
     try {
       if (!req.user) {
@@ -89,10 +92,52 @@ export class OrderController {
     }
   }
 
-  /** Get single order by ID for current user */
+  /** Get single order by ID */
   static async getOrderById(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        throw new AppError(
+          ERROR_CODES.AUTH_INVALID_CREDENTIALS,
+          "User not authenticated",
+          HTTP_STATUS.UNAUTHORIZED
+        );
+      }
+
+      const user_id = req.user.id;
+
+      let { id } = req.params;
+      if (Array.isArray(id)) {
+        id = id[0];
+      }
+
+      const order = await OrderService.getOrderById(id, user_id);
+
+      if (!order) {
+        throw new AppError(
+          ERROR_CODES.NOT_FOUND,
+          `Order ${id} not found`,
+          HTTP_STATUS.NOT_FOUND
+        );
+      }
+
+      return res.json({ success: true, order });
+    } catch (err: any) {
+      const status = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+      return res.status(status).json({
+        success: false,
+        code: err.code || "INTERNAL_ERROR",
+        message: err.message || "Something went wrong",
+      });
+    }
+  }
+
+  /** Confirm CARD payment manually */
+  static async confirmPayment(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    // Ensure user is authenticated
     if (!req.user) {
       throw new AppError(
         ERROR_CODES.AUTH_INVALID_CREDENTIALS,
@@ -101,32 +146,36 @@ export class OrderController {
       );
     }
 
-    const user_id = req.user.id;
+    let { orderId } = req.params;
 
-    // Normalize id from params to string
-    let { id } = req.params;
-    if (Array.isArray(id)) {
-      id = id[0];
+    if (Array.isArray(orderId)) {
+      orderId = orderId[0];
     }
 
-    const order = await OrderService.getOrderById(id, user_id);
-
-    if (!order) {
+    if (!orderId) {
       throw new AppError(
-        ERROR_CODES.NOT_FOUND,
-        `Order ${id} not found`,
-        HTTP_STATUS.NOT_FOUND
+        ERROR_CODES.VALIDATION_ERROR,
+        "Order ID is required",
+        HTTP_STATUS.BAD_REQUEST
       );
     }
 
-    return res.json({ success: true, order });
-  } catch (err: any) {
-    const status = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    const order = await OrderService.confirmPayment(orderId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment confirmed successfully",
+      order,
+    });
+
+  } catch (error: any) {
+    const status = error.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
     return res.status(status).json({
       success: false,
-      code: err.code || "INTERNAL_ERROR",
-      message: err.message || "Something went wrong",
+      code: error.code || "INTERNAL_ERROR",
+      message: error.message || "Something went wrong",
     });
   }
 }
+
 }

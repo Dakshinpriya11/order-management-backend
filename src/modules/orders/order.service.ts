@@ -7,6 +7,7 @@ import { ERROR_CODES } from "../../errors/errorCodes";
 import { HTTP_STATUS } from "../../errors/httpStatus";
 import { sequelize } from "../../config/db";
 import { Op } from "sequelize";
+import { emitOrderUpdate } from "./order.events";
 
 interface OrderItemInput {
   menu_item_id: string;
@@ -125,4 +126,34 @@ export class OrderService {
       include: [{ model: OrderItem, as: "items" }],
     });
   }
+
+  static async confirmPayment(orderId: string) {
+  const order = await Order.findByPk(orderId);
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  if (order.order_status !== OrderStatus.PAYMENT_PENDING) {
+    throw new Error("Order is not in PAYMENT_PENDING state");
+  }
+
+  if (order.payment_method !== PaymentMethod.CARD) {
+    throw new Error("Only CARD payments can be confirmed manually");
+  }
+
+  const now = new Date();
+
+  await order.update({
+    payment_status: PaymentStatus.PAID,
+    order_status: OrderStatus.PAID,
+    status_updated_at: now,
+  });
+
+  // Emit updated order
+  await emitOrderUpdate(order);
+
+  return order;
+}
+
 }
