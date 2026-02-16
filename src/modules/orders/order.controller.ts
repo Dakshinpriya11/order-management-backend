@@ -178,4 +178,54 @@ export class OrderController {
   }
 }
 
+static async cancelOrder(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user) {
+      throw new AppError(
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS,
+        "User not authenticated",
+        HTTP_STATUS.UNAUTHORIZED
+      );
+    }
+
+    let { orderId } = req.params;
+
+    if (Array.isArray(orderId)) {
+      orderId = orderId[0];
+    }
+
+    if (!orderId) {
+      throw new AppError(
+        ERROR_CODES.VALIDATION_ERROR,
+        "Order ID is required",
+        HTTP_STATUS.BAD_REQUEST
+      );
+    }
+
+    const order = await OrderService.cancelOrder(
+      orderId,
+      req.user.id
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      order,
+    });
+
+  } catch (error: any) {
+    const status = error.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    return res.status(status).json({
+      success: false,
+      code: error.code || "INTERNAL_ERROR",
+      message: error.message || "Something went wrong",
+    });
+  }
+}
+
+
 }

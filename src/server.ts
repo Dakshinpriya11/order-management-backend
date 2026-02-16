@@ -13,7 +13,8 @@ const start = async () => {
     await connectDB();
 
     // 2️⃣ Sync all models (create/update tables if not exists)
-    await sequelize.sync({ alter: true });
+    //await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log("Models synced");
 
     // 3️⃣ Create HTTP server

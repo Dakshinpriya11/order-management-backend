@@ -156,4 +156,46 @@ export class OrderService {
   return order;
 }
 
+static async cancelOrder(orderId: string, userId: string) {
+  const order = await Order.findOne({
+    where: {
+      id: orderId,
+      user_id: userId,
+    },
+  });
+
+  if (!order) {
+    throw new AppError(
+      ERROR_CODES.NOT_FOUND,
+      "Order not found",
+      HTTP_STATUS.NOT_FOUND
+    );
+  }
+
+  const cancelableStatuses = [
+    OrderStatus.PAYMENT_PENDING,
+    OrderStatus.PAID,
+  ];
+
+  if (!cancelableStatuses.includes(order.order_status)) {
+    throw new AppError(
+      ERROR_CODES.VALIDATION_ERROR,
+      "Cannot cancel order at this stage",
+      HTTP_STATUS.BAD_REQUEST
+    );
+  }
+
+  const now = new Date();
+
+  await order.update({
+    order_status: OrderStatus.CANCELLED,
+    status_updated_at: now,
+  });
+
+  await emitOrderUpdate(order);
+
+  return order;
+}
+
+
 }

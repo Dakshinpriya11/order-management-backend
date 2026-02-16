@@ -10,6 +10,8 @@ router.post("/", authMiddleware, validate(createOrderSchema), OrderController.cr
 router.get("/", authMiddleware, OrderController.getOrders);
 router.get("/:id", authMiddleware, OrderController.getOrderById);
 router.post("/:orderId/confirm-payment",authMiddleware, OrderController.confirmPayment);
+router.patch("/:orderId/cancel",authMiddleware,OrderController.cancelOrder);
+
 
 
 export default router;
