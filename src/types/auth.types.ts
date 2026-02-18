@@ -13,10 +13,10 @@ export interface AuthUser {
   firstName: string;
   lastName?: string;
   role: "USER" | "ADMIN";
-  password?: string; // add this so hashed password can be stored internally
+  password?: string; 
 }
 
 export interface LoginResult {
-  user: Omit<AuthUser, "password">; // remove password before sending to client
+  user: Omit<AuthUser, "password">; 
   token: string;
 }

@@ -5,10 +5,7 @@ import { PaymentMethod } from "../../database/models/order.model";
 import { AppError } from "../../errors/appError";
 import { ERROR_CODES } from "../../errors/errorCodes";
 import { HTTP_STATUS } from "../../errors/httpStatus";
-
-interface ConfirmPaymentParams {
-  orderId: string;
-}
+import { ConfirmPaymentParams } from "../../types/order.types";
 
 export class OrderController {
   /** Create a new order */

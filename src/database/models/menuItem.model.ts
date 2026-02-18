@@ -46,6 +46,6 @@ export const seedMenuItems = async () => {
       { name: "Burger", description: "Veg Burger", price: 120 },
       { name: "Pasta", description: "Tomato Pasta", price: 180 },
     ]);
-    console.log("✅ Menu items seeded");
+    console.log(" Menu items seeded");
   }
 };

@@ -19,7 +19,7 @@ export const orderStatusCron = async (io?: SocketIO) => {
   try {
     /**
      * Helper function
-     * 1. Find orders
+     * 1. Find 
      * 2. Update them
      * 3. Fetch updated rows
      * 4. Emit updated rows
